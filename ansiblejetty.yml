@@ -1,0 +1,25 @@
+- name: install jetty admin 
+  hosts: bogon
+  sudo: True
+  vars:
+    war_file: /home/admin.war #本地文件
+    jetty_root: /home/pft/pft-member-base/webapps/ROOT 
+  tasks:   
+    - name: rm ROOT.
+      file: 
+        state: absent
+        dest: "{{ jetty_root }}"
+    - name: mkdir ROOT.
+      file:
+        state: directory
+        dest: "{{ jetty_root }}"
+        owner: root
+        group: root
+        mode: 755
+    - name: unzip war.
+      unarchive: 
+        src: "{{ war_file }}"
+        dest: "{{ jetty_root }}"
+        copy: yes
+    - name: start jetty.
+      action: shell {{ jetty_root }}/../../bin/start.sh

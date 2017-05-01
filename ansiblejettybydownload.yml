@@ -1,0 +1,32 @@
+- name: install jetty admin 
+  hosts: bogon
+  sudo: True
+  vars:
+    war_file: /tmp/admin.war #本地文件
+    jetty_root: /home/pft/pft-member-base/webapps/ROOT 
+  tasks:
+    - name: Download webapps
+      shell: 'wget http://192.168.20.144:8181/nexus/content/repositories/snapshots/com/pft/pft-member/0.0.1-SNAPSHOT/pft-member-0.0.1-20170501.070045-1.war
+        -O /tmp/admin.war creates=/tmp/admin.war'
+      register: jetty_downloaded
+      tags:
+        - jetty   
+    - name: rm ROOT.
+      file: 
+        state: absent
+        dest: "{{ jetty_root }}"
+    - name: mkdir ROOT.
+      file:
+        state: directory
+        dest: "{{ jetty_root }}"
+        owner: root
+        group: root
+        mode: 755
+    - name: unzip war.      
+      shell: unzip /tmp/admin.war chdir=/home/pft/pft-member-base/webapps/ROOT/
+      when: jetty_downloaded|changed == True
+      tags:
+        - jetty
+    - name: start jetty.
+      action: shell {{ jetty_root }}/../../bin/start.sh
+
